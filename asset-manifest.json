@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Geo-Sell-Frontend/static/css/main.b7ba82a1.css",
+    "main.js": "/Geo-Sell-Frontend/static/js/main.5a0c4d22.js",
+    "static/js/453.33584eec.chunk.js": "/Geo-Sell-Frontend/static/js/453.33584eec.chunk.js",
+    "index.html": "/Geo-Sell-Frontend/index.html",
+    "main.b7ba82a1.css.map": "/Geo-Sell-Frontend/static/css/main.b7ba82a1.css.map",
+    "main.5a0c4d22.js.map": "/Geo-Sell-Frontend/static/js/main.5a0c4d22.js.map",
+    "453.33584eec.chunk.js.map": "/Geo-Sell-Frontend/static/js/453.33584eec.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b7ba82a1.css",
+    "static/js/main.5a0c4d22.js"
+  ]
+}
