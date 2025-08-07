@@ -1,30 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  MapPin, 
-  Rocket, 
-  LogIn, 
-  Users, 
-  TrendingUp, 
-  Brain, 
-  Target, 
-  BarChart3,
-  MapPinned,
-  Beaker,
-  Star,
-  Check,
-  Menu,
-  X,
-  ChevronDown
-} from 'lucide-react';
-import AuthModal from '../components/AuthModal'; // Uncommented the import
+import AuthModal from '../components/AuthModal';
+import AuthPage from './AuthPage';
 import './LandingPage.css';
 
 const LandingPage = () => {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('signin');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('signin');
+  const [showAuthPage, setShowAuthPage] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     // Check authentication status on component mount
@@ -54,13 +48,29 @@ const LandingPage = () => {
   }, []);
 
   const openAuthModal = (mode) => {
+    // Check if user is already logged in before opening modal
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (loggedIn) {
+      // If already logged in, redirect to dashboard
+      window.open('../../../freeTrail.html', '_blank');
+      return;
+    }
+    
     setAuthMode(mode);
-    setIsAuthModalOpen(true);
-    setIsMobileMenuOpen(false); // Close mobile menu if open
+    setShowAuthPage(true);
+    setIsMenuOpen(false);
   };
 
   const closeAuthModal = () => {
     setIsAuthModalOpen(false);
+  };
+
+  const closeAuthPage = () => {
+    setShowAuthPage(false);
+  };
+
+  const handleWatchDemo = () => {
+    window.open('https://youtu.be/VtQb1X1qHe8?si=3h9p_ZfjFA0e9OCy', '_blank');
   };
 
   const handleLogout = () => {
@@ -70,36 +80,46 @@ const LandingPage = () => {
     setUserEmail('');
   };
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-    setIsMobileMenuOpen(false);
+    setIsMenuOpen(false);
   };
+
+  // If auth page should be shown, render it instead of landing page
+  if (showAuthPage) {
+    return <AuthPage onClose={closeAuthPage} />;
+  }
 
   return (
     <div className="landing-page">
       {/* Navigation */}
-      <nav className="navbar">
+      <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="nav-container">
           <div className="nav-brand">
-            <MapPin className="brand-icon" size={24} />
+            <i className="fas fa-map-marker-alt brand-icon"></i>
             <span className="brand-text">GeoSell</span>
           </div>
-          
-          <ul className={`nav-menu ${isMobileMenuOpen ? 'active' : ''}`}>
+          <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
             <li><a href="#features" onClick={() => scrollToSection('features')}>Features</a></li>
             <li><a href="#how-it-works" onClick={() => scrollToSection('how-it-works')}>How It Works</a></li>
             <li><a href="#pricing" onClick={() => scrollToSection('pricing')}>Pricing</a></li>
             <li><a href="#contact" onClick={() => scrollToSection('contact')}>Contact</a></li>
           </ul>
-
           <div className="nav-buttons">
             {isLoggedIn ? (
               <>
                 <span className="user-welcome">Welcome, {userEmail}</span>
-                <button className="btn btn-primary" onClick={() => window.open('../../../freeTrail.html', '_blank')}>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => window.open('../../../freeTrail.html', '_blank')}
+                >
                   Go to Dashboard
                 </button>
                 <button className="btn btn-outline" onClick={handleLogout}>
@@ -117,13 +137,11 @@ const LandingPage = () => {
               </>
             )}
           </div>
-
-          <button 
-            className="hamburger"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className={`hamburger ${isMenuOpen ? 'active' : ''}`} onClick={toggleMenu}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
       </nav>
 
@@ -147,24 +165,36 @@ const LandingPage = () => {
               <div className="hero-buttons">
                 {isLoggedIn ? (
                   <>
-                    <button className="btn btn-primary btn-large" onClick={() => window.open('../../../freeTrail.html', '_blank')}>
-                      <BarChart3 size={20} />
+                    <button 
+                      className="btn btn-primary btn-large"
+                      onClick={() => window.open('../../../freeTrail.html', '_blank')}
+                    >
+                      <i className="fas fa-rocket"></i>
                       Go to Dashboard
                     </button>
-                    <button className="btn btn-outline btn-large" onClick={handleLogout}>
-                      <LogIn size={20} />
-                      Sign Out
+                    <button 
+                      className="btn btn-outline btn-large"
+                      onClick={handleWatchDemo}
+                    >
+                      <i className="fas fa-play"></i>
+                      Watch Demo
                     </button>
                   </>
                 ) : (
                   <>
-                    <button className="btn btn-primary btn-large" onClick={() => openAuthModal('signup')}>
-                      <Rocket size={20} />
+                    <button 
+                      className="btn btn-primary btn-large"
+                      onClick={() => openAuthModal('signup')}
+                    >
+                      <i className="fas fa-rocket"></i>
                       Start Free Trial
                     </button>
-                    <button className="btn btn-outline btn-large" onClick={() => openAuthModal('signin')}>
-                      <LogIn size={20} />
-                      Sign In
+                    <button 
+                      className="btn btn-outline btn-large"
+                      onClick={handleWatchDemo}
+                    >
+                      <i className="fas fa-play"></i>
+                      Watch Demo
                     </button>
                   </>
                 )}
@@ -232,54 +262,53 @@ const LandingPage = () => {
             <p>Everything you need to analyze markets and make data-driven decisions</p>
           </div>
           <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">
-                <MapPinned size={24} />
+            {[
+              {
+                icon: 'fas fa-map-marked-alt',
+                title: 'Region Intelligence',
+                description: 'Visualize demand heatmaps, competitor analysis, and market trends across different regions with interactive maps.',
+                highlight: 'Real-time data updates'
+              },
+              {
+                icon: 'fas fa-brain',
+                title: 'AI Business Plans',
+                description: 'Generate comprehensive business plans with market analysis, risk assessment, and growth strategies using advanced AI.',
+                highlight: 'Powered by GPT-4'
+              },
+              {
+                icon: 'fas fa-chart-line',
+                title: 'Sales Trend Analysis',
+                description: 'Track product performance with detailed charts, growth metrics, and predictive analytics for better forecasting.',
+                highlight: 'Predictive insights'
+              },
+              {
+                icon: 'fas fa-users',
+                title: 'Competitor Insights',
+                description: 'Analyze competitor strategies, pricing, and market positioning to stay ahead of the competition.',
+                highlight: 'Live monitoring'
+              },
+              {
+                icon: 'fas fa-flask',
+                title: 'Scenario Simulator',
+                description: 'Test different business scenarios with what-if analysis to minimize risks and maximize opportunities.',
+                highlight: 'Risk assessment'
+              },
+              {
+                icon: 'fas fa-bullseye',
+                title: 'Marketing Intelligence',
+                description: 'Optimize your marketing campaigns with region-specific insights and performance tracking.',
+                highlight: 'ROI optimization'
+              }
+            ].map((feature, index) => (
+              <div key={index} className="feature-card">
+                <div className="feature-icon">
+                  <i className={feature.icon}></i>
+                </div>
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
+                <div className="feature-highlight">{feature.highlight}</div>
               </div>
-              <h3>Region Intelligence</h3>
-              <p>Visualize demand heatmaps, competitor analysis, and market trends across different regions with interactive maps.</p>
-              <div className="feature-highlight">Real-time data updates</div>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Brain size={24} />
-              </div>
-              <h3>AI Business Plans</h3>
-              <p>Generate comprehensive business plans with market analysis, risk assessment, and growth strategies using advanced AI.</p>
-              <div className="feature-highlight">Powered by GPT-4</div>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <TrendingUp size={24} />
-              </div>
-              <h3>Sales Trend Analysis</h3>
-              <p>Track product performance with detailed charts, growth metrics, and predictive analytics for better forecasting.</p>
-              <div className="feature-highlight">Predictive insights</div>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Users size={24} />
-              </div>
-              <h3>Competitor Insights</h3>
-              <p>Analyze competitor strategies, pricing, and market positioning to stay ahead of the competition.</p>
-              <div className="feature-highlight">Live monitoring</div>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Beaker size={24} />
-              </div>
-              <h3>Scenario Simulator</h3>
-              <p>Test different business scenarios with what-if analysis to minimize risks and maximize opportunities.</p>
-              <div className="feature-highlight">Risk assessment</div>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">
-                <Target size={24} />
-              </div>
-              <h3>Marketing Intelligence</h3>
-              <p>Optimize your marketing campaigns with region-specific insights and performance tracking.</p>
-              <div className="feature-highlight">ROI optimization</div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -292,34 +321,36 @@ const LandingPage = () => {
             <p>Simple steps to transform your business intelligence</p>
           </div>
           <div className="steps-container">
-            <div className="step">
-              <div className="step-number">1</div>
-              <div className="step-content">
-                <h3>Connect Your Data</h3>
-                <p>Integrate with your existing systems or upload your data to get started instantly.</p>
+            {[
+              {
+                number: '1',
+                title: 'Connect Your Data',
+                description: 'Integrate with your existing systems or upload your data to get started instantly.'
+              },
+              {
+                number: '2',
+                title: 'Analyze Markets',
+                description: 'Our AI analyzes market trends, competitor data, and regional demand patterns.'
+              },
+              {
+                number: '3',
+                title: 'Get Insights',
+                description: 'Receive actionable recommendations and AI-generated business strategies.'
+              },
+              {
+                number: '4',
+                title: 'Make Decisions',
+                description: 'Execute data-driven decisions with confidence using our intelligent insights.'
+              }
+            ].map((step, index) => (
+              <div key={index} className="step">
+                <div className="step-number">{step.number}</div>
+                <div className="step-content">
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
+                </div>
               </div>
-            </div>
-            <div className="step">
-              <div className="step-number">2</div>
-              <div className="step-content">
-                <h3>Analyze Markets</h3>
-                <p>Our AI analyzes market trends, competitor data, and regional demand patterns.</p>
-              </div>
-            </div>
-            <div className="step">
-              <div className="step-number">3</div>
-              <div className="step-content">
-                <h3>Get Insights</h3>
-                <p>Receive actionable recommendations and AI-generated business strategies.</p>
-              </div>
-            </div>
-            <div className="step">
-              <div className="step-number">4</div>
-              <div className="step-content">
-                <h3>Make Decisions</h3>
-                <p>Execute data-driven decisions with confidence using our intelligent insights.</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -332,75 +363,73 @@ const LandingPage = () => {
             <p>Flexible pricing for businesses of all sizes</p>
           </div>
           <div className="pricing-grid">
-            <div className="pricing-card">
-              <div className="pricing-header">
-                <h3>Starter</h3>
-                <div className="price">
-                  <span className="currency">$</span>
-                  <span className="amount">29</span>
-                  <span className="period">/month</span>
+            {[
+              {
+                name: 'Starter',
+                price: '29',
+                features: [
+                  '5 Region Analysis',
+                  'Basic Market Trends',
+                  '10 AI Business Plans',
+                  'Email Support'
+                ],
+                buttonText: 'Get Started',
+                buttonClass: 'btn-outline'
+              },
+              {
+                name: 'Professional',
+                price: '79',
+                featured: true,
+                badge: 'Most Popular',
+                features: [
+                  'Unlimited Regions',
+                  'Advanced Analytics',
+                  'Unlimited AI Plans',
+                  'Scenario Simulator',
+                  'Priority Support'
+                ],
+                buttonText: 'Get Started',
+                buttonClass: 'btn-primary'
+              },
+              {
+                name: 'Enterprise',
+                price: '199',
+                features: [
+                  'Everything in Pro',
+                  'Custom Integrations',
+                  'White-label Options',
+                  'Dedicated Support',
+                  'Custom Training'
+                ],
+                buttonText: 'Contact Sales',
+                buttonClass: 'btn-outline'
+              }
+            ].map((plan, index) => (
+              <div key={index} className={`pricing-card ${plan.featured ? 'featured' : ''}`}>
+                {plan.badge && <div className="pricing-badge">{plan.badge}</div>}
+                <div className="pricing-header">
+                  <h3>{plan.name}</h3>
+                  <div className="price">
+                    <span className="currency">$</span>
+                    <span className="amount">{plan.price}</span>
+                    <span className="period">/month</span>
+                  </div>
                 </div>
+                <ul className="pricing-features">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex}>
+                      <i className="fas fa-check"></i> {feature}
+                    </li>
+                  ))}
+                </ul>
+                <button 
+                  className={`btn ${plan.buttonClass} pricing-btn`}
+                  onClick={() => plan.buttonText === 'Contact Sales' ? null : openAuthModal('signup')}
+                >
+                  {plan.buttonText}
+                </button>
               </div>
-              <ul className="pricing-features">
-                <li><Check size={16} /> 5 Region Analysis</li>
-                <li><Check size={16} /> Basic Market Trends</li>
-                <li><Check size={16} /> 10 AI Business Plans</li>
-                <li><Check size={16} /> Email Support</li>
-              </ul>
-              <button 
-                className="btn btn-outline pricing-btn"
-                onClick={() => openAuthModal('signup')}
-              >
-                Get Started
-              </button>
-            </div>
-            <div className="pricing-card featured">
-              <div className="pricing-badge">Most Popular</div>
-              <div className="pricing-header">
-                <h3>Professional</h3>
-                <div className="price">
-                  <span className="currency">$</span>
-                  <span className="amount">79</span>
-                  <span className="period">/month</span>
-                </div>
-              </div>
-              <ul className="pricing-features">
-                <li><Check size={16} /> Unlimited Regions</li>
-                <li><Check size={16} /> Advanced Analytics</li>
-                <li><Check size={16} /> Unlimited AI Plans</li>
-                <li><Check size={16} /> Scenario Simulator</li>
-                <li><Check size={16} /> Priority Support</li>
-              </ul>
-              <button 
-                className="btn btn-primary pricing-btn"
-                onClick={() => openAuthModal('signup')}
-              >
-                Get Started
-              </button>
-            </div>
-            <div className="pricing-card">
-              <div className="pricing-header">
-                <h3>Enterprise</h3>
-                <div className="price">
-                  <span className="currency">$</span>
-                  <span className="amount">199</span>
-                  <span className="period">/month</span>
-                </div>
-              </div>
-              <ul className="pricing-features">
-                <li><Check size={16} /> Everything in Pro</li>
-                <li><Check size={16} /> Custom Integrations</li>
-                <li><Check size={16} /> White-label Options</li>
-                <li><Check size={16} /> Dedicated Support</li>
-                <li><Check size={16} /> Custom Training</li>
-              </ul>
-              <button 
-                className="btn btn-outline pricing-btn"
-                onClick={() => openAuthModal('signup')}
-              >
-                Contact Sales
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -414,24 +443,36 @@ const LandingPage = () => {
             <div className="cta-buttons">
               {isLoggedIn ? (
                 <>
-                  <button className="btn btn-primary btn-large" onClick={() => window.open('../../../freeTrail.html', '_blank')}>
-                    <BarChart3 size={20} />
+                  <button 
+                    className="btn btn-primary btn-large"
+                    onClick={() => window.open('../../../freeTrail.html', '_blank')}
+                  >
+                    <i className="fas fa-rocket"></i>
                     Go to Dashboard
                   </button>
-                  <button className="btn btn-outline btn-large" onClick={handleLogout}>
-                    <LogIn size={20} />
-                    Sign Out
+                  <button 
+                    className="btn btn-outline btn-large"
+                    onClick={handleWatchDemo}
+                  >
+                    <i className="fas fa-play"></i>
+                    Watch Demo
                   </button>
                 </>
               ) : (
                 <>
-                  <button className="btn btn-primary btn-large" onClick={() => openAuthModal('signup')}>
-                    <Rocket size={20} />
+                  <button 
+                    className="btn btn-primary btn-large"
+                    onClick={() => openAuthModal('signup')}
+                  >
+                    <i className="fas fa-rocket"></i>
                     Start Free Trial
                   </button>
-                  <button className="btn btn-outline btn-large" onClick={() => openAuthModal('signin')}>
-                    <LogIn size={20} />
-                    Sign In
+                  <button 
+                    className="btn btn-outline btn-large"
+                    onClick={handleWatchDemo}
+                  >
+                    <i className="fas fa-play"></i>
+                    Watch Demo
                   </button>
                 </>
               )}
@@ -440,52 +481,101 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer id="contact" className="footer">
+      {/* Enhanced Footer */}
+      <footer className="footer">
         <div className="container">
           <div className="footer-content">
-            <div className="footer-section">
+            <div className="footer-section brand-section">
               <div className="footer-brand">
-                <MapPin className="brand-icon" size={24} />
+                <i className="fas fa-map-marker-alt brand-icon"></i>
                 <span className="brand-text">GeoSell</span>
               </div>
-              <p>AI-powered business intelligence for smarter market decisions.</p>
+              <p className="footer-description">
+                AI-powered business intelligence for smarter market decisions. 
+                Transform your business with data-driven insights.
+              </p>
               <div className="social-links">
-                <a href="#"><span>Twitter</span></a>
-                <a href="#"><span>LinkedIn</span></a>
-                <a href="#"><span>GitHub</span></a>
+                <a href="#" className="social-link twitter">
+                  <i className="fab fa-twitter"></i>
+                </a>
+                <a href="#" className="social-link linkedin">
+                  <i className="fab fa-linkedin"></i>
+                </a>
+                <a href="#" className="social-link github">
+                  <i className="fab fa-github"></i>
+                </a>
+                <a href="#" className="social-link instagram">
+                  <i className="fab fa-instagram"></i>
+                </a>
+              </div>
+              <div className="newsletter">
+                <h4>Stay Updated</h4>
+                <div className="newsletter-form">
+                  <input type="email" placeholder="Enter your email" />
+                  <button className="btn btn-primary">
+                    <i className="fas fa-paper-plane"></i>
+                  </button>
+                </div>
               </div>
             </div>
+            
             <div className="footer-section">
               <h4>Product</h4>
               <ul>
                 <li><a href="#">Features</a></li>
                 <li><a href="#">Pricing</a></li>
-                <li><a href="#">API</a></li>
-                <li><a href="#">Documentation</a></li>
+                <li><a href="#">API Documentation</a></li>
+                <li><a href="#">Integrations</a></li>
+                <li><a href="#">Mobile App</a></li>
+                <li><a href="#">Enterprise</a></li>
               </ul>
             </div>
+            
             <div className="footer-section">
               <h4>Company</h4>
               <ul>
-                <li><a href="#">About</a></li>
+                <li><a href="#">About Us</a></li>
                 <li><a href="#">Blog</a></li>
                 <li><a href="#">Careers</a></li>
-                <li><a href="#">Contact</a></li>
+                <li><a href="#">Press Kit</a></li>
+                <li><a href="#">Partners</a></li>
+                <li><a href="#">Investors</a></li>
               </ul>
             </div>
+            
             <div className="footer-section">
               <h4>Support</h4>
               <ul>
                 <li><a href="#">Help Center</a></li>
-                <li><a href="#">Community</a></li>
-                <li><a href="#">Status</a></li>
+                <li><a href="#">Community Forum</a></li>
+                <li><a href="#">Live Chat</a></li>
+                <li><a href="#">System Status</a></li>
                 <li><a href="#">Security</a></li>
+                <li><a href="#">Contact Us</a></li>
+              </ul>
+            </div>
+            
+            <div className="footer-section">
+              <h4>Legal</h4>
+              <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Cookie Policy</a></li>
+                <li><a href="#">GDPR</a></li>
+                <li><a href="#">Compliance</a></li>
               </ul>
             </div>
           </div>
+          
           <div className="footer-bottom">
-            <p>&copy; 2025 GeoSell. All rights reserved.</p>
+            <div className="footer-bottom-content">
+              <p>&copy; 2025 GeoSell. All rights reserved.</p>
+              <div className="footer-badges">
+                <span className="badge">SOC 2 Certified</span>
+                <span className="badge">ISO 27001</span>
+                <span className="badge">GDPR Compliant</span>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
